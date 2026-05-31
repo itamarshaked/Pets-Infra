@@ -27,3 +27,60 @@ resource "aws_subnet" "public_subnet" {
     Name = "pets-public-subnet"
   }
 }
+
+resource "aws_internet_gateway" "pets_igw" {
+  vpc_id = aws_vpc.pets_vpc.id
+
+  tags = {
+    Name = "pets-igw"
+  }
+}
+
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.pets_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.pets_igw.id
+  }
+
+  tags = {
+    Name = "pets-public-rt"
+  }
+}
+
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_security_group" "pets_sg" {
+  name        = "pets-sg"
+  description = "Security group for Pets App"
+  vpc_id      = aws_vpc.pets_vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "pets-sg"
+  }
+}

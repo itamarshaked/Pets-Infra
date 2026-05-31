@@ -12,3 +12,7 @@ output "subnet_id" {
 output "security_group_id" {
   value = aws_security_group.pets_sg.id
 }
+
+output "server_public_ip" {
+  value = aws_instance.pets_server.public_ip
+}

@@ -1,8 +1,9 @@
-resource "aws_s3_bucket" "terraform_demo" {
-  bucket = "itamar-pets-app-demo-bucket"
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "itamarshaked-pets-app-state"
 
   tags = {
     Project = "Pets-App"
-    Owner   = "Itamar"
+    Environment = "dev"
+    ManagedBy = "Terraform"
   }
 }

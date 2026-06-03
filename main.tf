@@ -104,6 +104,17 @@ resource "aws_instance" "pets_server" {
   vpc_security_group_ids = [aws_security_group.pets_sg.id]
 
   associate_public_ip_address = true
+user_data = <<-EOF
+#!/bin/bash
+dnf update -y
+
+dnf install docker -y
+
+systemctl enable docker
+systemctl start docker
+
+usermod -aG docker ec2-user
+EOF
 
   tags = {
     Name = "pets-server"

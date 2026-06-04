@@ -107,12 +107,17 @@ resource "aws_instance" "pets_server" {
 user_data = <<-EOF
 #!/bin/bash
 dnf update -y
-dnf install docker -y
+dnf install -y docker curl nano
 
 systemctl enable docker
 systemctl start docker
 
 usermod -aG docker ec2-user
+
+mkdir -p /usr/libexec/docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 \
+  -o /usr/libexec/docker/cli-plugins/docker-compose
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
 mkdir -p /opt/pets-app
 
@@ -121,16 +126,16 @@ services:
   postgres:
     image: postgres:16
     container_name: pets-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: petuser
       POSTGRES_PASSWORD: petpass
       POSTGRES_DB: petsdb
-    networks:
-      - pets-net
 
   pet-app:
     image: ghcr.io/itamarshaked/pet-app:latest
     container_name: pet-app
+    restart: unless-stopped
     depends_on:
       - postgres
     ports:
@@ -138,11 +143,6 @@ services:
     environment:
       DATABASE_URL: postgresql://petuser:petpass@postgres:5432/petsdb
       JWT_SECRET_KEY: dev-secret-key-change-me
-    networks:
-      - pets-net
-
-networks:
-  pets-net:
 COMPOSE
 
 cd /opt/pets-app

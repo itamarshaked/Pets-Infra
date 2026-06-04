@@ -127,6 +127,8 @@ services:
     image: postgres:16
     container_name: pets-postgres
     restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: petuser
       POSTGRES_PASSWORD: petpass
@@ -143,6 +145,10 @@ services:
     environment:
       DATABASE_URL: postgresql://petuser:petpass@postgres:5432/petsdb
       JWT_SECRET_KEY: dev-secret-key-change-me
+
+volumes:
+  postgres_data:
+
 COMPOSE
 
 cd /opt/pets-app

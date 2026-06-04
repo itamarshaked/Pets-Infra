@@ -107,15 +107,47 @@ resource "aws_instance" "pets_server" {
 user_data = <<-EOF
 #!/bin/bash
 dnf update -y
-
 dnf install docker -y
 
 systemctl enable docker
 systemctl start docker
 
 usermod -aG docker ec2-user
-EOF
 
+mkdir -p /opt/pets-app
+
+cat > /opt/pets-app/docker-compose.yml <<'COMPOSE'
+services:
+  postgres:
+    image: postgres:16
+    container_name: pets-postgres
+    environment:
+      POSTGRES_USER: petuser
+      POSTGRES_PASSWORD: petpass
+      POSTGRES_DB: petsdb
+    networks:
+      - pets-net
+
+  pet-app:
+    image: ghcr.io/itamarshaked/pet-app:latest
+    container_name: pet-app
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://petuser:petpass@postgres:5432/petsdb
+      JWT_SECRET_KEY: dev-secret-key-change-me
+    networks:
+      - pets-net
+
+networks:
+  pets-net:
+COMPOSE
+
+cd /opt/pets-app
+docker compose up -d
+EOF
   tags = {
     Name = "pets-server"
   }

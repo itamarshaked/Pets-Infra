@@ -19,7 +19,7 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
 
-checkov:
+  checkov:
     runs-on: ubuntu-latest
 
     steps:

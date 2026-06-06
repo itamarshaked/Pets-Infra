@@ -199,3 +199,19 @@ resource "aws_db_subnet_group" "pets_db_subnet_group" {
   }
 }
 
+resource "aws_security_group" "rds_sg" {
+  name        = "pets-rds-sg"
+  description = "Allow PostgreSQL from EC2"
+  vpc_id      = aws_vpc.pets_vpc.id
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.pets_sg.id]
+  }
+
+  tags = {
+    Name = "pets-rds-sg"
+  }
+}

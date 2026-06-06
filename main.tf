@@ -130,7 +130,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://petuser:petpass123@${aws_db_instance.pets_db.address}:5432/petsdb
+      DATABASE_URL: postgresql://petuser:${var.db_password}@${aws_db_instance.pets_db.address}:5432/petsdb
       JWT_SECRET_KEY: dev-secret-key-change-me
 
 volumes:
@@ -213,7 +213,7 @@ resource "aws_db_instance" "pets_db" {
 
   db_name  = "petsdb"
   username = "petuser"
-  password = "petpass123"
+  password = var.db_password
 
   db_subnet_group_name   = aws_db_subnet_group.pets_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]

@@ -60,6 +60,7 @@ resource "aws_security_group" "pets_sg" {
   vpc_id      = aws_vpc.pets_vpc.id
 
   ingress {
+    description = "Allow SSH access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -67,6 +68,7 @@ resource "aws_security_group" "pets_sg" {
   }
 
   ingress {
+    description = "Allow Port API access"
     from_port   = 8000
     to_port     = 8000
     protocol    = "tcp"
@@ -74,6 +76,7 @@ resource "aws_security_group" "pets_sg" {
   }
 
   egress {
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -190,6 +193,7 @@ resource "aws_security_group" "rds_sg" {
   vpc_id      = aws_vpc.pets_vpc.id
 
   ingress {
+    description = "Allow 5432"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"

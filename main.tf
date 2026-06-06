@@ -127,8 +127,10 @@ services:
     image: postgres:16
     container_name: pets-postgres
     restart: unless-stopped
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     environment:
       POSTGRES_USER: petuser
       POSTGRES_PASSWORD: petpass
@@ -154,6 +156,44 @@ COMPOSE
 cd /opt/pets-app
 docker compose up -d
 EOF
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+resource "aws_subnet" "private_subnet_1" {
+  vpc_id            = aws_vpc.pets_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = data.aws_availability_zones.available.names[0]
+
+  tags = {
+    Name = "pets-private-subnet-1"
+  }
+}
+
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id            = aws_vpc.pets_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = data.aws_availability_zones.available.names[1]
+
+  tags = {
+    Name = "pets-private-subnet-2"
+  }
+}
+
+resource "aws_db_subnet_group" "pets_db_subnet_group" {
+  name = "pets-db-subnet-group"
+
+  subnet_ids = [
+    aws_subnet.private_subnet_1.id,
+    aws_subnet.private_subnet_2.id
+  ]
+
+  tags = {
+    Name = "pets-db-subnet-group"
+  }
+}
+
   tags = {
     Name = "pets-server"
   }

@@ -123,29 +123,14 @@ mkdir -p /opt/pets-app
 
 cat > /opt/pets-app/docker-compose.yml <<'COMPOSE'
 services:
-  postgres:
-    image: postgres:16
-    container_name: pets-postgres
-    restart: unless-stopped
-
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-    environment:
-      POSTGRES_USER: petuser
-      POSTGRES_PASSWORD: petpass
-      POSTGRES_DB: petsdb
-
   pet-app:
     image: ghcr.io/itamarshaked/pet-app:latest
     container_name: pet-app
     restart: unless-stopped
-    depends_on:
-      - postgres
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://petuser:petpass@postgres:5432/petsdb
+      DATABASE_URL: postgresql://petuser:petpass123@${aws_db_instance.pets_db.address}:5432/petsdb
       JWT_SECRET_KEY: dev-secret-key-change-me
 
 volumes:

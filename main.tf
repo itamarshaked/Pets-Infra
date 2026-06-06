@@ -157,6 +157,11 @@ cd /opt/pets-app
 docker compose up -d
 EOF
 
+  tags = {
+    Name = "pets-server"
+  }
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -191,11 +196,6 @@ resource "aws_db_subnet_group" "pets_db_subnet_group" {
 
   tags = {
     Name = "pets-db-subnet-group"
-  }
-}
-
-  tags = {
-    Name = "pets-server"
   }
 }
 

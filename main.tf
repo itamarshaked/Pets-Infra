@@ -102,6 +102,7 @@ data "aws_ami" "amazon_linux" {
 resource "aws_instance" "pets_server" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t3.micro"
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.pets_sg.id]
@@ -239,4 +240,64 @@ resource "aws_db_instance" "pets_db" {
   tags = {
     Name = "pets-rds-postgres"
   }
+}
+
+resource "aws_secretsmanager_secret" "db_secret" {
+  name = "pets-db-credentials"
+}
+
+resource "aws_secretsmanager_secret_version" "db_secret_value" {
+  secret_id = aws_secretsmanager_secret.db_secret.id
+
+  secret_string = jsonencode({
+    username = "petuser"
+    password = var.db_password
+    host     = aws_db_instance.pets_db.address
+    database = "petsdb"
+    port     = 5432
+  })
+}
+
+resource "aws_iam_role" "ec2_role" {
+  name = "pets-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "pets-ec2-profile"
+  role = aws_iam_role.ec2_role.name
+}
+
+resource "aws_iam_role_policy" "secrets_access" {
+  name = "pets-secrets-access"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = aws_secretsmanager_secret.db_secret.arn
+      }
+    ]
+  })
 }

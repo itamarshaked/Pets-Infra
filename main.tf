@@ -108,10 +108,10 @@ resource "aws_instance" "pets_server" {
   vpc_security_group_ids = [aws_security_group.pets_sg.id]
 
   associate_public_ip_address = true
-user_data = <<-EOF
+  user_data = <<-USERDATA
 #!/bin/bash
 dnf update -y
-dnf install -y docker curl nano
+dnf install -y docker curl nano jq awscli
 
 systemctl enable docker
 systemctl start docker
@@ -125,6 +125,23 @@ chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
 mkdir -p /opt/pets-app
 
+SECRET_JSON=$(aws secretsmanager get-secret-value \
+  --secret-id pets-db-credentials \
+  --region eu-west-1 \
+  --query SecretString \
+  --output text)
+
+DB_USER=$(echo $${SECRET_JSON} | jq -r .username)
+DB_PASS=$(echo $${SECRET_JSON} | jq -r .password)
+DB_HOST=$(echo $${SECRET_JSON} | jq -r .host)
+DB_NAME=$(echo $${SECRET_JSON} | jq -r .database)
+DB_PORT=$(echo $${SECRET_JSON} | jq -r .port)
+
+cat > /opt/pets-app/.env <<ENVFILE
+DATABASE_URL=postgresql://$${DB_USER}:$${DB_PASS}@$${DB_HOST}:$${DB_PORT}/$${DB_NAME}
+JWT_SECRET_KEY=dev-secret-key-change-me
+ENVFILE
+
 cat > /opt/pets-app/docker-compose.yml <<'COMPOSE'
 services:
   pet-app:
@@ -133,18 +150,13 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql://petuser:${var.db_password}@${aws_db_instance.pets_db.address}:5432/petsdb
-      JWT_SECRET_KEY: dev-secret-key-change-me
-
-volumes:
-  postgres_data:
-
+    env_file:
+      - .env
 COMPOSE
 
 cd /opt/pets-app
 docker compose up -d
-EOF
+USERDATA
 
 metadata_options {
   http_tokens = "required"

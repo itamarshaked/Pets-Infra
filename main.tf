@@ -64,7 +64,7 @@ resource "aws_security_group" "pets_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["44.207.86.60/32"]
   }
 
   ingress {
@@ -218,6 +218,9 @@ resource "aws_db_instance" "pets_db" {
   db_name  = "petsdb"
   username = "petuser"
   password = var.db_password
+
+  storage_encrypted = true
+  auto_minor_version_upgrade = true
 
   db_subnet_group_name   = aws_db_subnet_group.pets_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]

@@ -36,8 +36,7 @@ jobs:
         with:
           directory: .
           framework: terraform
-          soft_fail_on: LOW,MEDIUM,HIGH
-          hard_fail_on: CRITICAL
+          soft_fail: true
           output_format: sarif
           output_file_path: results.sarif
 

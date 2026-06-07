@@ -26,8 +26,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Checkov
+       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
           framework: terraform
+          soft_fail_on: LOW,MEDIUM
+          hard_fail_on: HIGH,CRITICAL

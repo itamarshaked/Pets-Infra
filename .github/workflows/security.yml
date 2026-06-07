@@ -22,11 +22,11 @@ jobs:
   checkov:
     runs-on: ubuntu-latest
 
-     steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-       - name: Run Checkov
+      - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .

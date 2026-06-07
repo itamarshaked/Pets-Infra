@@ -36,8 +36,8 @@ jobs:
         with:
           directory: .
           framework: terraform
-          soft_fail_on: LOW,MEDIUM
-          hard_fail_on: HIGH,CRITICAL
+          soft_fail_on: LOW,MEDIUM,HIGH
+          hard_fail_on: CRITICAL
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3

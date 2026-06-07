@@ -38,6 +38,8 @@ jobs:
           framework: terraform
           soft_fail_on: LOW,MEDIUM,HIGH
           hard_fail_on: CRITICAL
+          output_format: sarif
+          output_file_path: results.sarif
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3

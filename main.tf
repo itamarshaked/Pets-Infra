@@ -145,6 +145,14 @@ cd /opt/pets-app
 docker compose up -d
 EOF
 
+metadata_options {
+  http_tokens = "required"
+}
+
+root_block_device {
+  encrypted = true
+}
+
   tags = {
     Name = "pets-server"
   }

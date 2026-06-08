@@ -1,3 +1,13 @@
+variable "cloudflare_origin_cert" {
+  type      = string
+  sensitive = true
+}
+
+variable "cloudflare_origin_key" {
+  type      = string
+  sensitive = true
+}
+
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "itamarshaked-pets-app-state"
 

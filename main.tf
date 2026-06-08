@@ -64,7 +64,15 @@ resource "aws_security_group" "pets_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["44.207.86.60/32"]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -146,14 +154,38 @@ ENVFILE
 
 cat > /opt/pets-app/docker-compose.yml <<'COMPOSE'
 services:
+  nginx:
+    image: nginx:alpine
+    container_name: pets-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - pet-app
+
   pet-app:
     image: ghcr.io/itamarshaked/pet-app:latest
     container_name: pet-app
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     env_file:
       - .env
+
+cat > /opt/pets-app/nginx.conf <<'NGINX'
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://pet-app:8000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+NGINX
+
 COMPOSE
 
 cd /opt/pets-app

@@ -126,6 +126,11 @@ resource "aws_instance" "pets_server" {
 
   key_name = "pets-key"
 
+  root_block_device {
+     volume_size = 20
+     volume_type = "gp3"
+   }
+
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.pets_sg.id]
 

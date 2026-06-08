@@ -75,6 +75,14 @@ resource "aws_security_group" "pets_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+ingress {
+  description = "Allow HTTPS"
+  from_port   = 443
+  to_port     = 443
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -149,12 +157,24 @@ rm -rf /opt/pets-app/nginx.conf
 cat > /opt/pets-app/nginx.conf <<'NGINX'
 server {
     listen 80;
+    server_name your-domain.com www.your-domain.com;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name pets.shaked.in;
+
+    ssl_certificate     /etc/ssl/cloudflare/origin.crt;
+    ssl_certificate_key /etc/ssl/cloudflare/origin.key;
 
     location / {
         proxy_pass http://pet-app:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 NGINX
@@ -167,8 +187,10 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/ssl/cloudflare:/etc/ssl/cloudflare:ro
     depends_on:
       - pet-app
 

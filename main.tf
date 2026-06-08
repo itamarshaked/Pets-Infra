@@ -144,6 +144,21 @@ DATABASE_URL=postgresql://$${DB_USER}:$${DB_PASS}@$${DB_HOST}:$${DB_PORT}/$${DB_
 JWT_SECRET_KEY=dev-secret-key-change-me
 ENVFILE
 
+rm -rf /opt/pets-app/nginx.conf
+
+cat > /opt/pets-app/nginx.conf <<'NGINX'
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://pet-app:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+NGINX
+
 cat > /opt/pets-app/docker-compose.yml <<'COMPOSE'
 services:
   nginx:
@@ -163,21 +178,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-
-cat > /opt/pets-app/nginx.conf <<'NGINX'
-server {
-    listen 80;
-
-    location / {
-        proxy_pass http://pet-app:8000;
-
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-NGINX
-
 COMPOSE
 
 cd /opt/pets-app

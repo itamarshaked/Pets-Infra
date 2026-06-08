@@ -126,6 +126,19 @@ dnf install -y docker jq awscli
 systemctl enable docker
 systemctl start docker
 
+mkdir -p /etc/ssl/cloudflare
+
+cat > /etc/ssl/cloudflare/origin.crt <<'EOF'
+${var.cloudflare_origin_cert}
+EOF
+
+cat > /etc/ssl/cloudflare/origin.key <<'EOF'
+${var.cloudflare_origin_key}
+EOF
+
+chmod 644 /etc/ssl/cloudflare/origin.crt
+chmod 600 /etc/ssl/cloudflare/origin.key
+
 usermod -aG docker ec2-user
 
 mkdir -p /usr/libexec/docker/cli-plugins

@@ -113,7 +113,7 @@ resource "aws_instance" "pets_server" {
   user_data = <<-USERDATA
 #!/bin/bash
 dnf update -y
-dnf install -y docker curl nano jq awscli
+dnf install -y docker jq awscli
 
 systemctl enable docker
 systemctl start docker

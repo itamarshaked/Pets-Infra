@@ -64,6 +64,31 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public_rt.id
 }
 
+locals {
+  allowed_ssh_cidrs = [
+    "82.166.164.237/32",     # Guest network
+    "91.227.164.0/23",     # Work
+    "44.207.86.60/32"   # Mobile hotspot
+  ]
+  cloudflare_ipv4_cidrs = [
+    "173.245.48.0/20",
+    "103.21.244.0/22",
+    "103.22.200.0/22",
+    "103.31.4.0/22",
+    "141.101.64.0/18",
+    "108.162.192.0/18",
+    "190.93.240.0/20",
+    "188.114.96.0/20",
+    "197.234.240.0/22",
+    "198.41.128.0/17",
+    "162.158.0.0/15",
+    "104.16.0.0/13",
+    "104.24.0.0/14",
+    "172.64.0.0/13",
+    "131.0.72.0/22"
+  ]
+}
+
 resource "aws_security_group" "pets_sg" {
   name        = "pets-sg"
   description = "Security group for Pets App"
@@ -74,7 +99,7 @@ resource "aws_security_group" "pets_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = local.allowed_ssh_cidrs
   }
 
   ingress {
@@ -82,7 +107,7 @@ resource "aws_security_group" "pets_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = local.cloudflare_ipv4_cidrs
   }
 
 ingress {
@@ -90,7 +115,7 @@ ingress {
   from_port   = 443
   to_port     = 443
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  cidr_blocks = local.cloudflare_ipv4_cidrs
 }
 
   egress {

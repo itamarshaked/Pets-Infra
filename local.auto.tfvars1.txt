@@ -1,2 +1,0 @@
-cloudflare_origin_cert = "dummy-cert"
-cloudflare_origin_key  = "dummy-key"
